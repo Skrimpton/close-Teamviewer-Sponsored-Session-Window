@@ -73,6 +73,12 @@ else
               host_name="${HOST}"
             fi
 
+
+            if [[ $host_name = "" ]]
+            then
+              exit 1
+            fi
+
             closeArr+=($(echo "$mywin" | awk -F' ' '{print $1}'  2>/dev/null | xargs))
             checkTitle="$(echo "$mywin" | awk -F\\${host_name} '{print $NF}'  2>/dev/null | xargs)"
 
