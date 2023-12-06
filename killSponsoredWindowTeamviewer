@@ -48,8 +48,6 @@ then
 else
   if [[ $hasWmctrl != "" ]]
   then
-
-
     while [[ $loopCheck == true ]]
     do
 
@@ -58,7 +56,6 @@ else
       for mywin in ${myarr[@]}
       do
         windowclass="$(echo "$mywin" | awk -F' ' '{print $3}' | xargs)"
-#         echo $windowclass
         case "$windowclass" in
 
           $teamviewer_window_class)
@@ -75,7 +72,6 @@ else
             then
               killMe=true
             fi
-
         ;;
         esac
       done
@@ -91,9 +87,6 @@ else
         loopCheck=false
 
       else
-#         echo $mywin
-#         echo $windowclass
-        echo "$closeArr[@]" # uncomment for debugging
         sleep 1
         closeArr=()
       fi
