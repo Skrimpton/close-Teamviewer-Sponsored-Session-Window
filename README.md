@@ -11,10 +11,11 @@ loopCheck=true
 declare -a closeArr
 
 #---------------------------------------------------------------------------------------------
-# USAGE:
+# SUGGESTED USAGE:
 #  start ( teamviewer in subshell and disown )   &&   let window get drawn   &&   start deamon
 #---------------------------------------------------------------------------------------------
 
+#  get the path from teamviewer's .desktop file
 # ( /opt/teamviewer/tv_bin/script/teamviewer & ) && sleep 2 && killSponsoredWindowTeamviewer
 
 #---------------------------------------------------------------------------------------------
@@ -40,7 +41,7 @@ HOMEMADE TeamViewer ADBLOCKER - Because they chose the dark side
     and add all of them to a list called '\$closeArr'
 
   - then check if teamviewer window has 'Sponsored session' in it's title
-    ⋅ if it does then break the loop and close all windows in '\$closeArr[@]'
+    ⋅ if it does then break the loop and close all windows \$id's in '\$closeArr[@]' with \$(wmtrcl -ic \$id)
 
   - if there are no windows with windowclass = '\$teamviewer_window_class' then break the loop, do nothing and exit script
 """
@@ -48,10 +49,11 @@ HOMEMADE TeamViewer ADBLOCKER - Because they chose the dark side
 
 if [[ $@ = "-h" || $@ = "--help" ]]
 then
-  echo $help
+  echo -e "$help"
 else
   if [[ $hasWmctrl != "" ]]
   then
+
     while [[ $loopCheck == true ]]
     do
 
@@ -63,15 +65,17 @@ else
         case "$windowclass" in
 
           $teamviewer_window_class)
+
             host_name="${HOSTNAME}"
+
             if [[ $host_name = "" ]]
             then
               host_name="${HOST}"
             fi
+
             closeArr+=($(echo "$mywin" | awk -F' ' '{print $1}'  2>/dev/null | xargs))
             checkTitle="$(echo "$mywin" | awk -F\\${host_name} '{print $NF}'  2>/dev/null | xargs)"
-            echo "${closeArr[@]}"
-            echo "$checkTitle"
+
             if [[ $checkTitle = "Sponsored session" ]]
             then
               killMe=true
