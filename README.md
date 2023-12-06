@@ -2,12 +2,12 @@
 ## Shell script that uses wmctrl to check for and close sponsored session window
 
 ```sh
-# !/bin/sh
+#!/bin/sh
 
-killMe=0
+killMe=false
 teamviewer_window_class="TeamViewer.TeamViewer"
 hasWmctrl="$(which wmctrl)"
-loopCheck=0
+loopCheck=true
 declare -a closeArr
 
 #---------------------------------------------------------------------------------------------
@@ -31,48 +31,55 @@ help="""
 HOMEMADE TeamViewer ADBLOCKER - Because they chose the dark side
 ———————————————————————————————————————————————————————————————————
 
-  - Run in a loop every second (sleep 1) until '\$loopCheck' == 1
+  - run in a loop every second (sleep 1) until '\$loopCheck' is false
 
-  - Check/update wmctrl list of all windows, with windowclass (the x-flag): '\$(wmctrl -lx)'
+  - output wmctrl list of all windows with windowclass '\$(wmctrl -lx)'
 
-  - Check if open  window any has window class matching '\$teamviewer_window_class': '$teamviewer_window_class'
+  - check if open  window any has window class matching '\$teamviewer_window_class': '$teamviewer_window_class'
     (or whatever you have from wmtrcl -lx)
     and add all of them to a list called '\$closeArr'
 
-  - Then check if teamviewer window has 'Sponsored session' in it's title
+  - then check if teamviewer window has 'Sponsored session' in it's title
+    ⋅ if it does then break the loop and close all windows in '\$closeArr[@]'
 
-    ⋅ If it does then \$loopCheck = 1 and close all window id's in '\${closeArr[@]}' with '\$(wctrl -ic \$id)'
-
-  - If there are no windows with windowclass = '$teamviewer_window_class' then \$loopCheck = 1, do nothing and exit script
+  - if there are no windows with windowclass = '\$teamviewer_window_class' then break the loop, do nothing and exit script
 """
 #---------------------------------------------------------------------------------------------
 
 if [[ $@ = "-h" || $@ = "--help" ]]
 then
-  echo "$help"
+  echo $help
 else
   if [[ $hasWmctrl != "" ]]
   then
-    while [[ $loopCheck == 0 ]]
+
+
+    while [[ $loopCheck == true ]]
     do
 
       IFS=$'\n' myarr=($(wmctrl -lx))
+
       for mywin in ${myarr[@]}
       do
-
         windowclass="$(echo "$mywin" | awk -F' ' '{print $3}' | xargs)"
-
+#         echo $windowclass
         case "$windowclass" in
 
           $teamviewer_window_class)
-
+            host_name="${HOSTNAME}"
+            if [[ $host_name = "" ]]
+            then
+              host_name="${HOST}"
+            fi
             closeArr+=($(echo "$mywin" | awk -F' ' '{print $1}'  2>/dev/null | xargs))
-            checkTitle="$(echo "$mywin" | awk -F\\${HOST} '{print $NF}'  2>/dev/null | xargs)"
-
+            checkTitle="$(echo "$mywin" | awk -F\\${host_name} '{print $NF}'  2>/dev/null | xargs)"
+            echo "${closeArr[@]}"
+            echo "$checkTitle"
             if [[ $checkTitle = "Sponsored session" ]]
             then
-              killMe=1
+              killMe=true
             fi
+
         ;;
         esac
       done
@@ -80,12 +87,12 @@ else
       if [[ ${#closeArr[@]} = 0 ]]
       then
 
-        loopCheck=1
+        loopCheck=false
 
-      elif [[ $killMe == 1 ]]
+      elif [[ $killMe == true ]]
       then
 
-        loopCheck=1
+        loopCheck=false
 
       else
         sleep 1
@@ -96,7 +103,7 @@ else
 
     for id in ${closeArr[@]}
     do
-      wmctrl -ic $id
+      wmctrl -ic $id &
     done
 
   fi
