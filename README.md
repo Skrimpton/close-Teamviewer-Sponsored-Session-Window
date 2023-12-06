@@ -41,7 +41,7 @@ HOMEMADE TeamViewer ADBLOCKER - Because they chose the dark side
 
   - Then check if teamviewer window has 'Sponsored session' in it's title
 
-    ⋅ If it does then \$loopCheck = 1 and close all window id's in '\${closeArr[@]}' with '\$(wctrl -ic $id)'
+    ⋅ If it does then \$loopCheck = 1 and close all window id's in '\${closeArr[@]}' with '\$(wctrl -ic \$id)'
 
   - If there are no windows with windowclass = '$teamviewer_window_class' then \$loopCheck = 1, do nothing and exit script
 """
